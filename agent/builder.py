@@ -427,6 +427,12 @@ class ValidationManager(Base, JobMixin):
             )
 
     def _validate_frappe_dependencies(self):
+        # Brownfield migrations: apps may carry stale frappe-dependencies specs
+        # while demonstrably running on the target version (classic bench never
+        # enforces these). Allow opting out via agent config.
+        if self._skip_frappe_dependency_validation():
+            return
+
         for app, pm in self.pmf.items():
             if (pypr := pm["pyproject"]) is None:
                 continue
@@ -436,6 +442,13 @@ class ValidationManager(Base, JobMixin):
                 continue
 
             self._check_frappe_dependencies(app, frappe_deps)
+
+    def _skip_frappe_dependency_validation(self) -> bool:
+        try:
+            with open(os.path.join(os.getcwd(), "config.json")) as f:
+                return bool(json.load(f).get("skip_frappe_dependency_validation"))
+        except Exception:
+            return False
 
     def _check_frappe_dependencies(self, app: str, frappe_deps: Dict[str, str]):
         for dep_app, expected in frappe_deps.items():
