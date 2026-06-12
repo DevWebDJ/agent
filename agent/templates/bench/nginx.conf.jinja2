@@ -210,7 +210,7 @@ server {
 		;
 
 	location ^~ /.well-known/acme-challenge/ {
-		return 301 http://ssl.{{ domain }}$request_uri;
+		root /home/frappe/press-certbot/webroot;
 	}
 	location / {
 		return 301 https://$host$request_uri;
