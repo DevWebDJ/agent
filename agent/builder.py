@@ -388,6 +388,10 @@ class ValidationManager(Base, JobMixin):
             raise ContextValidationError("Invalid release found", invalid_releases=invalid_releases)
 
     def _validate_python_requirement(self):
+        # Brownfield apps may declare aspirational requires-python (e.g. >=3.14)
+        # while running fine on the bench's pinned interpreter. Allow opting out.
+        if self._skip_frappe_dependency_validation():
+            return
         actual = self.get_dependency_version("python")
         for app, pm in self.pmf.items():
             self._validate_python_version(app, actual, pm)
@@ -406,6 +410,8 @@ class ValidationManager(Base, JobMixin):
         )
 
     def _validate_node_requirement(self):
+        if self._skip_frappe_dependency_validation():
+            return
         actual = self.get_dependency_version("node")
         for app, pm in self.pmf.items():
             self._validate_node_version(app, actual, pm)
