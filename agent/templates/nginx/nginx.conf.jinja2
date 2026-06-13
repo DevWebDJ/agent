@@ -55,7 +55,7 @@ http {
 	more_set_headers 'Server: Frappe Cloud';
 
 	keepalive_timeout 10;
-	keepalive_requests 10;
+	keepalive_requests 1000;
 
 	{% if proxy_ip %}
 		real_ip_header X-Real-IP;
